@@ -1,6 +1,9 @@
 package com.globalbooks.orders_service.controller;
 
 import com.globalbooks.orders_service.model.Order;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
@@ -13,12 +16,23 @@ public class OrderController {
 
     private Map<String, Order> orders = new HashMap<>();
 
+    @Autowired
+    private RabbitTemplate rabbitTemplate;
+
+    @Value("${order.queue.name}")
+    private String orderQueueName;
+
     @PostMapping
     public Order createOrder(@RequestBody Order order) {
         String id = UUID.randomUUID().toString();
         order.setId(id);
         order.setTotal(order.getQuantity() * 50); // example price
         orders.put(id, order);
+
+        // Send order to PaymentsService via RabbitMQ
+        rabbitTemplate.convertAndSend(orderQueueName, order);
+
+        System.out.println("Sent order to queue: " + order.getId());
         return order;
     }
 
