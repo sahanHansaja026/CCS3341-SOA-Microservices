@@ -227,8 +227,6 @@ xmlns:cat="[http://catalog/">](http://catalog/%22>)
 
 ---
 
-✅ Now you have **proper documentation for both services**.
-
 Your project now includes:
 
 * **OrdersService (REST)**
@@ -236,104 +234,121 @@ Your project now includes:
 * **Deployment instructions**
 * **Testing instructions**
 
+# PaymentsService (Spring Boot – RabbitMQ Consumer)
+
+## Overview
+
+PaymentsService is a **Spring Boot microservice** that listens to **RabbitMQ** for orders sent by OrdersService.
+It simulates **payment processing** for each order asynchronously.
+
+This service is part of the **GlobalBooks SOA system**.
+
 ---
 
-PaymentsService (Spring Boot – RabbitMQ Consumer)
-Overview
+## Technologies Used
 
-PaymentsService is a Spring Boot microservice that listens to RabbitMQ for orders sent by OrdersService.
-It simulates payment processing for each order asynchronously.
+* Java 17
+* Spring Boot
+* Spring AMQP (RabbitMQ)
+* Maven
+* RabbitMQ
 
-This service is part of the GlobalBooks SOA system.
+---
 
-Technologies Used
-
-Java 17
-
-Spring Boot
-
-Spring AMQP (RabbitMQ)
-
-Maven
-
-RabbitMQ
-
-Service Function
+## Service Function
 
 PaymentsService performs the following:
 
-Listens to the orderQueue in RabbitMQ
+* Listens to the `orderQueue` in RabbitMQ
+* Receives orders from OrdersService
+* Simulates payment processing
+* Logs the payment status
 
-Receives orders from OrdersService
+---
 
-Simulates payment processing
+## Deployment Steps
 
-Logs the payment status
+1. Start **RabbitMQ server** on localhost (default port 5672).
+2. Open PaymentsService project folder:
 
-Deployment Steps
-
-Start RabbitMQ server on localhost (default port 5672).
-
-Open PaymentsService project folder:
-
+```bash
 cd payments-service
+```
 
-Build and run the project:
+3. Build and run the project:
 
+```bash
 mvn spring-boot:run
+```
 
-The console should show:
+4. The console should show:
 
+```
 Started PaymentsServiceApplication
 Created new connection: rabbitConnectionFactory...
+```
 
-PaymentsService is now ready to consume orders from RabbitMQ.
+5. PaymentsService is now ready to consume orders from RabbitMQ.
 
-Configuration
+---
 
-src/main/resources/application.properties:
+## Configuration
 
+`src/main/resources/application.properties`:
+
+```properties
 server.port=8081
 spring.rabbitmq.host=localhost
 spring.rabbitmq.port=5672
 spring.rabbitmq.username=guest
 spring.rabbitmq.password=guest
+```
 
-server.port → PaymentsService runs on 8081
+* `server.port` → PaymentsService runs on 8081
+* RabbitMQ credentials → default guest/guest
 
-RabbitMQ credentials → default guest/guest
+---
 
-Testing the Service
+## Testing the Service
 
-Ensure OrdersService is running on port 8080.
+1. Ensure **OrdersService** is running on port 8080.
+2. Send a POST request to OrdersService:
 
-Send a POST request to OrdersService:
-
+```http
 POST http://localhost:8080/orders
 Content-Type: application/json
+```
 
-Body Example:
+**Body Example:**
 
+```json
 {
   "bookTitle": "SOA Guide",
   "quantity": 2
 }
+```
 
-PaymentsService console should display:
+3. PaymentsService console should display:
 
+```
 Received order for payment: <order-id>
 Processing payment...
 Payment successful for order: <order-id>
+```
 
-Check RabbitMQ dashboard: the message will appear briefly in orderQueue and then disappear after consumption.
+4. Check RabbitMQ dashboard: the message will appear briefly in `orderQueue` and then disappear after consumption.
 
-Notes
+---
 
-PaymentsService does not expose REST endpoints.
+## Notes
 
-Its sole purpose is to consume messages asynchronously.
+* PaymentsService does **not expose REST endpoints**.
+* Its sole purpose is to **consume messages asynchronously**.
+* OrdersService must send orders to the same queue (`orderQueue`).
 
-OrdersService must send orders to the same queue (orderQueue).
+
+
+
 
 ```
 SOA/
