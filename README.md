@@ -238,9 +238,104 @@ Your project now includes:
 
 ---
 
+PaymentsService (Spring Boot – RabbitMQ Consumer)
+Overview
+
+PaymentsService is a Spring Boot microservice that listens to RabbitMQ for orders sent by OrdersService.
+It simulates payment processing for each order asynchronously.
+
+This service is part of the GlobalBooks SOA system.
+
+Technologies Used
+
+Java 17
+
+Spring Boot
+
+Spring AMQP (RabbitMQ)
+
+Maven
+
+RabbitMQ
+
+Service Function
+
+PaymentsService performs the following:
+
+Listens to the orderQueue in RabbitMQ
+
+Receives orders from OrdersService
+
+Simulates payment processing
+
+Logs the payment status
+
+Deployment Steps
+
+Start RabbitMQ server on localhost (default port 5672).
+
+Open PaymentsService project folder:
+
+cd payments-service
+
+Build and run the project:
+
+mvn spring-boot:run
+
+The console should show:
+
+Started PaymentsServiceApplication
+Created new connection: rabbitConnectionFactory...
+
+PaymentsService is now ready to consume orders from RabbitMQ.
+
+Configuration
+
+src/main/resources/application.properties:
+
+server.port=8081
+spring.rabbitmq.host=localhost
+spring.rabbitmq.port=5672
+spring.rabbitmq.username=guest
+spring.rabbitmq.password=guest
+
+server.port → PaymentsService runs on 8081
+
+RabbitMQ credentials → default guest/guest
+
+Testing the Service
+
+Ensure OrdersService is running on port 8080.
+
+Send a POST request to OrdersService:
+
+POST http://localhost:8080/orders
+Content-Type: application/json
+
+Body Example:
+
+{
+  "bookTitle": "SOA Guide",
+  "quantity": 2
+}
+
+PaymentsService console should display:
+
+Received order for payment: <order-id>
+Processing payment...
+Payment successful for order: <order-id>
+
+Check RabbitMQ dashboard: the message will appear briefly in orderQueue and then disappear after consumption.
+
+Notes
+
+PaymentsService does not expose REST endpoints.
+
+Its sole purpose is to consume messages asynchronously.
+
+OrdersService must send orders to the same queue (orderQueue).
 
 ```
-
 SOA/
 ├─ CatalogService/
 │  ├─ src/
@@ -312,71 +407,137 @@ SOA/
 │  │  ├─ test-classes/
 │  │  └─ CatalogService.war
 │  └─ pom.xml
-└─ orders-service/
-   ├─ .mvn/
-   │  └─ wrapper/
-   │     └─ maven-wrapper.properties
-   ├─ src/
-   │  ├─ main/
-   │  │  ├─ java/
-   │  │  │  └─ com/
-   │  │  │     └─ globalbooks/
-   │  │  │        └─ orders_service/
-   │  │  │           ├─ config/
-   │  │  │           │  └─ SecurityConfig.java
-   │  │  │           ├─ controller/
-   │  │  │           │  └─ OrderController.java
-   │  │  │           ├─ model/
-   │  │  │           │  └─ Order.java
-   │  │  │           └─ OrdersServiceApplication.java
-   │  │  └─ resources/
-   │  │     ├─ static/
-   │  │     ├─ templates/
-   │  │     └─ application.properties
-   │  └─ test/
-   │     └─ java/
-   │        └─ com/
-   │           └─ globalbooks/
-   │              └─ orders_service/
-   │                 └─ OrdersServiceApplicationTests.java
-   ├─ target/
-   │  ├─ classes/
-   │  │  ├─ com/
-   │  │  │  └─ globalbooks/
-   │  │  │     └─ orders_service/
-   │  │  │        ├─ config/
-   │  │  │        │  └─ SecurityConfig.class
-   │  │  │        ├─ controller/
-   │  │  │        │  └─ OrderController.class
-   │  │  │        ├─ model/
-   │  │  │        │  └─ Order.class
-   │  │  │        └─ OrdersServiceApplication.class
-   │  │  └─ application.properties
-   │  ├─ generated-sources/
-   │  │  └─ annotations/
-   │  ├─ generated-test-sources/
-   │  │  └─ test-annotations/
-   │  ├─ maven-status/
-   │  │  └─ maven-compiler-plugin/
-   │  │     ├─ compile/
-   │  │     │  └─ default-compile/
-   │  │     │     ├─ createdFiles.lst
-   │  │     │     └─ inputFiles.lst
-   │  │     └─ testCompile/
-   │  │        └─ default-testCompile/
-   │  │           ├─ createdFiles.lst
-   │  │           └─ inputFiles.lst
-   │  └─ test-classes/
-   │     └─ com/
-   │        └─ globalbooks/
-   │           └─ orders_service/
-   │              └─ OrdersServiceApplicationTests.class
-   ├─ .gitattributes
-   ├─ .gitignore
-   ├─ HELP.md
-   ├─ mvnw
-   ├─ mvnw.cmd
-   └─ pom.xml
+├─ orders-service/
+│  ├─ .mvn/
+│  │  └─ wrapper/
+│  │     └─ maven-wrapper.properties
+│  ├─ src/
+│  │  ├─ main/
+│  │  │  ├─ java/
+│  │  │  │  └─ com/
+│  │  │  │     └─ globalbooks/
+│  │  │  │        └─ orders_service/
+│  │  │  │           ├─ config/
+│  │  │  │           │  └─ SecurityConfig.java
+│  │  │  │           ├─ controller/
+│  │  │  │           │  └─ OrderController.java
+│  │  │  │           ├─ model/
+│  │  │  │           │  └─ Order.java
+│  │  │  │           └─ OrdersServiceApplication.java
+│  │  │  └─ resources/
+│  │  │     ├─ static/
+│  │  │     ├─ templates/
+│  │  │     └─ application.properties
+│  │  └─ test/
+│  │     └─ java/
+│  │        └─ com/
+│  │           └─ globalbooks/
+│  │              └─ orders_service/
+│  │                 └─ OrdersServiceApplicationTests.java
+│  ├─ target/
+│  │  ├─ classes/
+│  │  │  ├─ com/
+│  │  │  │  └─ globalbooks/
+│  │  │  │     └─ orders_service/
+│  │  │  │        ├─ config/
+│  │  │  │        │  └─ SecurityConfig.class
+│  │  │  │        ├─ controller/
+│  │  │  │        │  └─ OrderController.class
+│  │  │  │        ├─ model/
+│  │  │  │        │  └─ Order.class
+│  │  │  │        └─ OrdersServiceApplication.class
+│  │  │  └─ application.properties
+│  │  ├─ generated-sources/
+│  │  │  └─ annotations/
+│  │  ├─ generated-test-sources/
+│  │  │  └─ test-annotations/
+│  │  ├─ maven-status/
+│  │  │  └─ maven-compiler-plugin/
+│  │  │     ├─ compile/
+│  │  │     │  └─ default-compile/
+│  │  │     │     ├─ createdFiles.lst
+│  │  │     │     └─ inputFiles.lst
+│  │  │     └─ testCompile/
+│  │  │        └─ default-testCompile/
+│  │  │           ├─ createdFiles.lst
+│  │  │           └─ inputFiles.lst
+│  │  └─ test-classes/
+│  │     └─ com/
+│  │        └─ globalbooks/
+│  │           └─ orders_service/
+│  │              └─ OrdersServiceApplicationTests.class
+│  ├─ .gitattributes
+│  ├─ .gitignore
+│  ├─ HELP.md
+│  ├─ mvnw
+│  ├─ mvnw.cmd
+│  └─ pom.xml
+├─ payments-service/
+│  ├─ .mvn/
+│  │  └─ wrapper/
+│  │     └─ maven-wrapper.properties
+│  ├─ src/
+│  │  ├─ main/
+│  │  │  ├─ java/
+│  │  │  │  └─ com/
+│  │  │  │     └─ globalbooks/
+│  │  │  │        └─ payments_service/
+│  │  │  │           ├─ config/
+│  │  │  │           │  └─ RabbitMQConfig.java
+│  │  │  │           ├─ messaging/
+│  │  │  │           │  └─ PaymentConsumer.java
+│  │  │  │           ├─ model/
+│  │  │  │           │  └─ Order.java
+│  │  │  │           └─ PaymentsServiceApplication.java
+│  │  │  └─ resources/
+│  │  │     ├─ static/
+│  │  │     ├─ templates/
+│  │  │     └─ application.properties
+│  │  └─ test/
+│  │     └─ java/
+│  │        └─ com/
+│  │           └─ globalbooks/
+│  │              └─ payments_service/
+│  │                 └─ PaymentsServiceApplicationTests.java
+│  ├─ target/
+│  │  ├─ classes/
+│  │  │  ├─ com/
+│  │  │  │  └─ globalbooks/
+│  │  │  │     └─ payments_service/
+│  │  │  │        ├─ config/
+│  │  │  │        │  └─ RabbitMQConfig.class
+│  │  │  │        ├─ messaging/
+│  │  │  │        │  └─ PaymentConsumer.class
+│  │  │  │        ├─ model/
+│  │  │  │        │  └─ Order.class
+│  │  │  │        └─ PaymentsServiceApplication.class
+│  │  │  └─ application.properties
+│  │  ├─ generated-sources/
+│  │  │  └─ annotations/
+│  │  ├─ generated-test-sources/
+│  │  │  └─ test-annotations/
+│  │  ├─ maven-status/
+│  │  │  └─ maven-compiler-plugin/
+│  │  │     ├─ compile/
+│  │  │     │  └─ default-compile/
+│  │  │     │     ├─ createdFiles.lst
+│  │  │     │     └─ inputFiles.lst
+│  │  │     └─ testCompile/
+│  │  │        └─ default-testCompile/
+│  │  │           ├─ createdFiles.lst
+│  │  │           └─ inputFiles.lst
+│  │  └─ test-classes/
+│  │     └─ com/
+│  │        └─ globalbooks/
+│  │           └─ payments_service/
+│  │              └─ PaymentsServiceApplicationTests.class
+│  ├─ .gitattributes
+│  ├─ .gitignore
+│  ├─ HELP.md
+│  ├─ mvnw
+│  ├─ mvnw.cmd
+│  └─ pom.xml
+└─ README.md
 
 
 ```
