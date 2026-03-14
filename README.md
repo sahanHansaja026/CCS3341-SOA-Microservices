@@ -1,354 +1,180 @@
 
-# OrdersService (REST API)
+```markdown
+# SOA Microservices Project with RabbitMQ
 
-## Overview
-
-OrdersService is a REST-based microservice built using Spring Boot.
-It allows clients to create and retrieve book orders.
-
-This service is part of the **GlobalBooks SOA system**.
+This project implements a simple Service-Oriented Architecture (SOA) using Spring Boot microservices, communicating via **RabbitMQ**.
 
 ---
 
-## Technologies Used
+## **Folder Structure**
 
-* Java 17
-* Spring Boot
-* Maven
-* Spring Security (Basic Authentication)
-* Postman (API testing)
 
----
 
-## Project Structure
+SOA/
+│
+├─ orders-service/
+│   ├─ src/
+│   ├─ pom.xml
+│   └─ application.properties
+│
+├─ payments-service/
+│   ├─ src/
+│   ├─ pom.xml
+│   └─ application.properties
+│
+├─ shipping-service/
+│   ├─ src/
+│   ├─ pom.xml
+│   └─ application.properties
+│
+├─ catalog-service/ (if used)
+│   ├─ src/
+│   ├─ pom.xml
+│   └─ application.properties
+│
+└─ README.md
 
-src/main/java/com/globalbooks/orders_service
 
-controller/
- OrderController.java
-
-model/
- Order.java
-
-config/
- SecurityConfig.java
-
-OrdersServiceApplication.java
-
----
-
-## API Endpoints
-
-### 1. Create Order
-
-POST /orders
-
-Creates a new order.
-
-Example Request Body:
-
-{
-"bookTitle": "SOA Guide",
-"quantity": 2
-}
-
-Example Response:
-
-{
-"id": "generated-uuid",
-"bookTitle": "SOA Guide",
-"quantity": 2,
-"total": 100.0
-}
 
 ---
 
-### 2. Get Order
+## **Requirements**
 
-GET /orders/{id}
-
-Returns an order by ID.
-
-Example:
-
-GET [http://localhost:8080/orders/{order-id}](http://localhost:8080/orders/{order-id})
+- Java 17
+- Maven
+- RabbitMQ (local or Docker)
+- Postman (optional, for API testing)
 
 ---
 
-## Authentication
+## **RabbitMQ Setup**
 
-Basic Authentication is enabled.
+1. **Install and run RabbitMQ** or use Docker:
 
-Username: sahan
-Password: Password123
+```bash
+docker run -d --hostname my-rabbit --name rabbitmq -p 5672:5672 -p 15672:15672 rabbitmq:3-management
+````
 
-Configure in Postman:
+2. **Access RabbitMQ Management Dashboard**:
 
-Authorization → Basic Auth
+```
+http://localhost:15672
+```
+
+* Default credentials:
+
+  * Username: `guest`
+  * Password: `guest`
+
+3. **Exchanges**
+
+* `ordersExchange` (direct)
+* `paymentsExchange` (direct)
+
+4. **Queues**
+
+* `paymentQueue` → consumes from `paymentsExchange`
+* `shippingQueue` → consumes from `ordersExchange`
+
+5. **Bindings**
+
+* `paymentQueue` bound to `paymentsExchange` with routing key `payment`
+* `shippingQueue` bound to `ordersExchange` with routing key `shipping`
 
 ---
 
-## How to Run the Service
+## **How to Run Each Service**
 
-1. Open terminal in project folder.
+1. Start RabbitMQ (if not using Docker, run `rabbitmq-server` locally)
+2. Open terminal in service folder, e.g.:
 
-2. Run:
-
+```bash
+cd orders-service
 mvn spring-boot:run
+```
 
-3. Service will start on:
-
-[http://localhost:8080](http://localhost:8080)
-
----
-
-## How to Test Using Postman
-
-### Create Order
-
-POST
-[http://localhost:8080/orders](http://localhost:8080/orders)
-
-Authorization:
-Basic Auth
-
-Body → raw JSON
-
-{
-"bookTitle": "SOA Guide",
-"quantity": 2
-}
-
----
-
-### Get Order
-
-GET
-[http://localhost:8080/orders/{id}](http://localhost:8080/orders/{id})
-
-Use the ID returned from the POST request.
-
----
-
-## Notes
-
-* Orders are stored in an **in-memory HashMap**.
-* Restarting the application will remove all stored orders.
-* Future improvements will include RabbitMQ messaging for PaymentsService and ShippingService.
-
----
-
-# CatalogService (SOAP Web Service)
-
-## Overview
-
-CatalogService is a SOAP-based web service that provides book information such as price and availability.
-
-It is deployed on Apache Tomcat and used by other services in the GlobalBooks SOA system.
-
----
-
-## Technologies Used
-
-* Java
-* JAX-WS
-* Apache Tomcat
-* Maven
-
----
-
-## Service Function
-
-CatalogService provides operations such as:
-
-getBookPrice()
-
-Returns the price of a book.
-
----
-
-## Deployment Steps
-
-1. Build the project:
-
-mvn clean package
-
-2. A WAR file will be generated:
-
-CatalogService-1.0-SNAPSHOT.war
-
-3. Copy the WAR file to Tomcat:
-
-apache-tomcat/webapps/
-
-4. Start Apache Tomcat.
-
-5. The service will deploy automatically.
-
----
-
-## Accessing the Service
-
-Open browser:
-
-[http://localhost:8080/CatalogService/CatalogService?wsdl](http://localhost:8080/CatalogService/CatalogService?wsdl)
-
-This shows the WSDL of the SOAP service.
-
----
-
-## Testing the Service
-
-You can test using:
-
-* SOAP UI
-* Postman (SOAP request)
-
-Example SOAP Request:
-
-<soapenv:Envelope xmlns:soapenv="[http://schemas.xmlsoap.org/soap/envelope/](http://schemas.xmlsoap.org/soap/envelope/)"
-xmlns:cat="[http://catalog/">](http://catalog/%22>)
-[soapenv:Header/](soapenv:Header/)
-[soapenv:Body](soapenv:Body)
-[cat:getBookPrice](cat:getBookPrice)
-
-<title>SOA Guide</title>
-</cat:getBookPrice>
-</soapenv:Body>
-</soapenv:Envelope>
-
----
-
-## Notes
-
-* CatalogService is deployed as a SOAP service.
-* It will later be called by OrdersService or BPEL process to retrieve book pricing.
-* Apache Tomcat must be running before accessing the service.
-
----
-
-Your project now includes:
-
-* **OrdersService (REST)**
-* **CatalogService (SOAP)**
-* **Deployment instructions**
-* **Testing instructions**
-
-# PaymentsService (Spring Boot – RabbitMQ Consumer)
-
-## Overview
-
-PaymentsService is a **Spring Boot microservice** that listens to **RabbitMQ** for orders sent by OrdersService.
-It simulates **payment processing** for each order asynchronously.
-
-This service is part of the **GlobalBooks SOA system**.
-
----
-
-## Technologies Used
-
-* Java 17
-* Spring Boot
-* Spring AMQP (RabbitMQ)
-* Maven
-* RabbitMQ
-
----
-
-## Service Function
-
-PaymentsService performs the following:
-
-* Listens to the `orderQueue` in RabbitMQ
-* Receives orders from OrdersService
-* Simulates payment processing
-* Logs the payment status
-
----
-
-## Deployment Steps
-
-1. Start **RabbitMQ server** on localhost (default port 5672).
-2. Open PaymentsService project folder:
+3. Repeat for other services:
 
 ```bash
 cd payments-service
-```
+mvn spring-boot:run
 
-3. Build and run the project:
-
-```bash
+cd shipping-service
 mvn spring-boot:run
 ```
 
-4. The console should show:
+---
 
-```
-Started PaymentsServiceApplication
-Created new connection: rabbitConnectionFactory...
-```
+## **API Testing (Using Postman)**
 
-5. PaymentsService is now ready to consume orders from RabbitMQ.
+### **Orders Service**
+
+* **Create Order**
+
+  * `POST http://localhost:8080/orders`
+  * Body (JSON):
+
+    ```json
+    {
+      "productId": "123",
+      "quantity": 2,
+      "price": 25.5
+    }
+    ```
+* **Get Orders**
+
+  * `GET http://localhost:8080/orders`
+
+### **Payments Service**
+
+* Receives messages from `orders-service` via `paymentsExchange`
+* Auto-processes payments and logs confirmation
+
+### **Shipping Service**
+
+* Receives messages from `orders-service` via `ordersExchange`
+* Logs shipping confirmation
 
 ---
 
-## Configuration
+## **Expected RabbitMQ Dashboard**
 
-`src/main/resources/application.properties`:
-
-```properties
-server.port=8081
-spring.rabbitmq.host=localhost
-spring.rabbitmq.port=5672
-spring.rabbitmq.username=guest
-spring.rabbitmq.password=guest
-```
-
-* `server.port` → PaymentsService runs on 8081
-* RabbitMQ credentials → default guest/guest
+* **Exchanges:** `ordersExchange`, `paymentsExchange`
+* **Queues:** `paymentQueue`, `shippingQueue`
+* **Bindings:** Queues attached to correct exchanges
+* **Consumers:** Active for each queue (check “Consumers” column)
+* **Messages:** Zero ready/unacknowledged if all messages processed
 
 ---
 
-## Testing the Service
+## **Testing Notes**
 
-1. Ensure **OrdersService** is running on port 8080.
-2. Send a POST request to OrdersService:
+* Submit an order → check RabbitMQ dashboard:
 
-```http
-POST http://localhost:8080/orders
-Content-Type: application/json
-```
-
-**Body Example:**
-
-```json
-{
-  "bookTitle": "SOA Guide",
-  "quantity": 2
-}
-```
-
-3. PaymentsService console should display:
-
-```
-Received order for payment: <order-id>
-Processing payment...
-Payment successful for order: <order-id>
-```
-
-4. Check RabbitMQ dashboard: the message will appear briefly in `orderQueue` and then disappear after consumption.
+  * Messages appear in `paymentQueue` and `shippingQueue`
+  * Processed messages disappear after consumers ack
+* Verify logs in each service for confirmations
 
 ---
 
-## Notes
+## **Dependencies**
 
-* PaymentsService does **not expose REST endpoints**.
-* Its sole purpose is to **consume messages asynchronously**.
-* OrdersService must send orders to the same queue (`orderQueue`).
+* Spring Boot 3.x
+* Spring AMQP
+* Jackson (JSON)
+* Lombok (optional)
 
+---
 
+## **Submission Checklist**
 
-
+* [ ] All service folders with code
+* [ ] `pom.xml` / dependencies
+* [ ] `application.properties`
+* [ ] README.md
+* [ ] Postman collection (optional)
+* [ ] RabbitMQ Docker / local instructions
+* [ ] Screenshots of dashboard (optional)
 
 ```
 SOA/
@@ -359,73 +185,32 @@ SOA/
 │  │     │  └─ com/
 │  │     │     └─ globalbooks/
 │  │     │        └─ catalog/
-│  │     │           ├─ Book.java
-│  │     │           └─ CatalogService.java
 │  │     └─ webapp/
 │  │        └─ WEB-INF/
-│  │           ├─ sun-jaxws.xml
-│  │           └─ web.xml
-│  ├─ target/
-│  │  ├─ CatalogService/
-│  │  │  ├─ META-INF/
-│  │  │  └─ WEB-INF/
-│  │  │     ├─ classes/
-│  │  │     │  └─ com/
-│  │  │     │     └─ globalbooks/
-│  │  │     │        └─ catalog/
-│  │  │     │           ├─ Book.class
-│  │  │     │           └─ CatalogService.class
-│  │  │     ├─ lib/
-│  │  │     │  ├─ FastInfoset-1.2.18.jar
-│  │  │     │  ├─ gmbal-api-only-4.0.3.jar
-│  │  │     │  ├─ ha-api-3.1.13.jar
-│  │  │     │  ├─ jakarta.activation-1.2.2.jar
-│  │  │     │  ├─ jakarta.annotation-api-1.3.5.jar
-│  │  │     │  ├─ jakarta.jws-api-2.1.0.jar
-│  │  │     │  ├─ jakarta.mail-1.6.7.jar
-│  │  │     │  ├─ jakarta.xml.bind-api-2.3.3.jar
-│  │  │     │  ├─ jakarta.xml.soap-api-1.4.2.jar
-│  │  │     │  ├─ jakarta.xml.ws-api-2.3.3.jar
-│  │  │     │  ├─ javax.activation-api-1.2.0.jar
-│  │  │     │  ├─ javax.annotation-api-1.3.2.jar
-│  │  │     │  ├─ javax.xml.soap-api-1.4.0.jar
-│  │  │     │  ├─ jaxb-api-2.3.1.jar
-│  │  │     │  ├─ jaxb-impl-2.3.5.jar
-│  │  │     │  ├─ jaxws-api-2.3.1.jar
-│  │  │     │  ├─ jaxws-rt-2.3.5.jar
-│  │  │     │  ├─ management-api-3.2.3.jar
-│  │  │     │  ├─ mimepull-1.9.15.jar
-│  │  │     │  ├─ policy-2.7.10.jar
-│  │  │     │  ├─ saaj-impl-1.5.3.jar
-│  │  │     │  ├─ stax-ex-1.8.3.jar
-│  │  │     │  ├─ stax2-api-4.2.1.jar
-│  │  │     │  ├─ streambuffer-1.5.10.jar
-│  │  │     │  └─ woodstox-core-6.2.6.jar
-│  │  │     ├─ sun-jaxws.xml
-│  │  │     └─ web.xml
-│  │  ├─ classes/
-│  │  │  └─ com/
-│  │  │     └─ globalbooks/
-│  │  │        └─ catalog/
-│  │  │           ├─ Book.class
-│  │  │           └─ CatalogService.class
-│  │  ├─ generated-sources/
-│  │  │  └─ annotations/
-│  │  ├─ maven-archiver/
-│  │  │  └─ pom.properties
-│  │  ├─ maven-status/
-│  │  │  └─ maven-compiler-plugin/
-│  │  │     └─ compile/
-│  │  │        └─ default-compile/
-│  │  │           ├─ createdFiles.lst
-│  │  │           └─ inputFiles.lst
-│  │  ├─ test-classes/
-│  │  └─ CatalogService.war
-│  └─ pom.xml
+│  └─ target/
+│     ├─ CatalogService/
+│     │  ├─ META-INF/
+│     │  └─ WEB-INF/
+│     │     ├─ classes/
+│     │     │  └─ com/
+│     │     │     └─ globalbooks/
+│     │     │        └─ catalog/
+│     │     └─ lib/
+│     ├─ classes/
+│     │  └─ com/
+│     │     └─ globalbooks/
+│     │        └─ catalog/
+│     ├─ generated-sources/
+│     │  └─ annotations/
+│     ├─ maven-archiver/
+│     ├─ maven-status/
+│     │  └─ maven-compiler-plugin/
+│     │     └─ compile/
+│     │        └─ default-compile/
+│     └─ test-classes/
 ├─ orders-service/
 │  ├─ .mvn/
 │  │  └─ wrapper/
-│  │     └─ maven-wrapper.properties
 │  ├─ src/
 │  │  ├─ main/
 │  │  │  ├─ java/
@@ -433,64 +218,43 @@ SOA/
 │  │  │  │     └─ globalbooks/
 │  │  │  │        └─ orders_service/
 │  │  │  │           ├─ config/
-│  │  │  │           │  └─ SecurityConfig.java
 │  │  │  │           ├─ controller/
-│  │  │  │           │  └─ OrderController.java
-│  │  │  │           ├─ model/
-│  │  │  │           │  └─ Order.java
-│  │  │  │           └─ OrdersServiceApplication.java
+│  │  │  │           └─ model/
 │  │  │  └─ resources/
 │  │  │     ├─ static/
-│  │  │     ├─ templates/
-│  │  │     └─ application.properties
+│  │  │     └─ templates/
 │  │  └─ test/
 │  │     └─ java/
 │  │        └─ com/
 │  │           └─ globalbooks/
 │  │              └─ orders_service/
-│  │                 └─ OrdersServiceApplicationTests.java
-│  ├─ target/
-│  │  ├─ classes/
-│  │  │  ├─ com/
-│  │  │  │  └─ globalbooks/
-│  │  │  │     └─ orders_service/
-│  │  │  │        ├─ config/
-│  │  │  │        │  └─ SecurityConfig.class
-│  │  │  │        ├─ controller/
-│  │  │  │        │  └─ OrderController.class
-│  │  │  │        ├─ model/
-│  │  │  │        │  └─ Order.class
-│  │  │  │        └─ OrdersServiceApplication.class
-│  │  │  └─ application.properties
-│  │  ├─ generated-sources/
-│  │  │  └─ annotations/
-│  │  ├─ generated-test-sources/
-│  │  │  └─ test-annotations/
-│  │  ├─ maven-status/
-│  │  │  └─ maven-compiler-plugin/
-│  │  │     ├─ compile/
-│  │  │     │  └─ default-compile/
-│  │  │     │     ├─ createdFiles.lst
-│  │  │     │     └─ inputFiles.lst
-│  │  │     └─ testCompile/
-│  │  │        └─ default-testCompile/
-│  │  │           ├─ createdFiles.lst
-│  │  │           └─ inputFiles.lst
-│  │  └─ test-classes/
-│  │     └─ com/
-│  │        └─ globalbooks/
-│  │           └─ orders_service/
-│  │              └─ OrdersServiceApplicationTests.class
-│  ├─ .gitattributes
-│  ├─ .gitignore
-│  ├─ HELP.md
-│  ├─ mvnw
-│  ├─ mvnw.cmd
-│  └─ pom.xml
+│  └─ target/
+│     ├─ classes/
+│     │  └─ com/
+│     │     └─ globalbooks/
+│     │        └─ orders_service/
+│     │           ├─ config/
+│     │           ├─ controller/
+│     │           └─ model/
+│     ├─ generated-sources/
+│     │  └─ annotations/
+│     ├─ generated-test-sources/
+│     │  └─ test-annotations/
+│     ├─ maven-archiver/
+│     ├─ maven-status/
+│     │  └─ maven-compiler-plugin/
+│     │     ├─ compile/
+│     │     │  └─ default-compile/
+│     │     └─ testCompile/
+│     │        └─ default-testCompile/
+│     ├─ surefire-reports/
+│     └─ test-classes/
+│        └─ com/
+│           └─ globalbooks/
+│              └─ orders_service/
 ├─ payments-service/
 │  ├─ .mvn/
 │  │  └─ wrapper/
-│  │     └─ maven-wrapper.properties
 │  ├─ src/
 │  │  ├─ main/
 │  │  │  ├─ java/
@@ -498,61 +262,86 @@ SOA/
 │  │  │  │     └─ globalbooks/
 │  │  │  │        └─ payments_service/
 │  │  │  │           ├─ config/
-│  │  │  │           │  └─ RabbitMQConfig.java
+│  │  │  │           ├─ listener/
 │  │  │  │           ├─ messaging/
-│  │  │  │           │  └─ PaymentConsumer.java
-│  │  │  │           ├─ model/
-│  │  │  │           │  └─ Order.java
-│  │  │  │           └─ PaymentsServiceApplication.java
+│  │  │  │           └─ model/
 │  │  │  └─ resources/
 │  │  │     ├─ static/
-│  │  │     ├─ templates/
-│  │  │     └─ application.properties
+│  │  │     └─ templates/
 │  │  └─ test/
 │  │     └─ java/
 │  │        └─ com/
 │  │           └─ globalbooks/
 │  │              └─ payments_service/
-│  │                 └─ PaymentsServiceApplicationTests.java
-│  ├─ target/
-│  │  ├─ classes/
-│  │  │  ├─ com/
-│  │  │  │  └─ globalbooks/
-│  │  │  │     └─ payments_service/
-│  │  │  │        ├─ config/
-│  │  │  │        │  └─ RabbitMQConfig.class
-│  │  │  │        ├─ messaging/
-│  │  │  │        │  └─ PaymentConsumer.class
-│  │  │  │        ├─ model/
-│  │  │  │        │  └─ Order.class
-│  │  │  │        └─ PaymentsServiceApplication.class
-│  │  │  └─ application.properties
-│  │  ├─ generated-sources/
-│  │  │  └─ annotations/
-│  │  ├─ generated-test-sources/
-│  │  │  └─ test-annotations/
-│  │  ├─ maven-status/
-│  │  │  └─ maven-compiler-plugin/
-│  │  │     ├─ compile/
-│  │  │     │  └─ default-compile/
-│  │  │     │     ├─ createdFiles.lst
-│  │  │     │     └─ inputFiles.lst
-│  │  │     └─ testCompile/
-│  │  │        └─ default-testCompile/
-│  │  │           ├─ createdFiles.lst
-│  │  │           └─ inputFiles.lst
-│  │  └─ test-classes/
-│  │     └─ com/
-│  │        └─ globalbooks/
-│  │           └─ payments_service/
-│  │              └─ PaymentsServiceApplicationTests.class
-│  ├─ .gitattributes
-│  ├─ .gitignore
-│  ├─ HELP.md
-│  ├─ mvnw
-│  ├─ mvnw.cmd
-│  └─ pom.xml
-└─ README.md
-
-
+│  └─ target/
+│     ├─ classes/
+│     │  └─ com/
+│     │     └─ globalbooks/
+│     │        └─ payments_service/
+│     │           ├─ config/
+│     │           ├─ listener/
+│     │           ├─ messaging/
+│     │           └─ model/
+│     ├─ generated-sources/
+│     │  └─ annotations/
+│     ├─ generated-test-sources/
+│     │  └─ test-annotations/
+│     ├─ maven-archiver/
+│     ├─ maven-status/
+│     │  └─ maven-compiler-plugin/
+│     │     ├─ compile/
+│     │     │  └─ default-compile/
+│     │     └─ testCompile/
+│     │        └─ default-testCompile/
+│     ├─ surefire-reports/
+│     └─ test-classes/
+│        └─ com/
+│           └─ globalbooks/
+│              └─ payments_service/
+└─ shipping-service/
+   ├─ .mvn/
+   │  └─ wrapper/
+   ├─ src/
+   │  ├─ main/
+   │  │  ├─ java/
+   │  │  │  └─ com/
+   │  │  │     └─ globalbooks/
+   │  │  │        └─ shipping_service/
+   │  │  │           ├─ config/
+   │  │  │           ├─ listener/
+   │  │  │           ├─ messaging/
+   │  │  │           └─ model/
+   │  │  └─ resources/
+   │  │     ├─ static/
+   │  │     └─ templates/
+   │  └─ test/
+   │     └─ java/
+   │        └─ com/
+   │           └─ globalbooks/
+   │              └─ shipping_service/
+   └─ target/
+      ├─ classes/
+      │  └─ com/
+      │     └─ globalbooks/
+      │        └─ shipping_service/
+      │           ├─ config/
+      │           ├─ listener/
+      │           ├─ messaging/
+      │           └─ model/
+      ├─ generated-sources/
+      │  └─ annotations/
+      ├─ generated-test-sources/
+      │  └─ test-annotations/
+      ├─ maven-archiver/
+      ├─ maven-status/
+      │  └─ maven-compiler-plugin/
+      │     ├─ compile/
+      │     │  └─ default-compile/
+      │     └─ testCompile/
+      │        └─ default-testCompile/
+      ├─ surefire-reports/
+      └─ test-classes/
+         └─ com/
+            └─ globalbooks/
+               └─ shipping_service/
 ```
