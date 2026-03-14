@@ -7,10 +7,15 @@ import org.springframework.stereotype.Component;
 @Component
 public class OrderListener {
 
-    @RabbitListener(queues = "orderQueue")
+    @RabbitListener(queues = "${order.queue.name}")
     public void receiveOrder(Order order) {
-        System.out.println("Received order for payment: " + order.getId());
-        System.out.println("Processing payment for order: " + order.getId());
-        System.out.println("Payment successful for order: " + order.getId());
+
+        System.out.println("Received Order in Payment Service:");
+        System.out.println("Order ID: " + order.getId());
+        System.out.println("Book: " + order.getBookTitle());
+        System.out.println("Quantity: " + order.getQuantity());
+        System.out.println("Total: " + order.getTotal());
+
+        System.out.println("Processing Payment...");
     }
 }
