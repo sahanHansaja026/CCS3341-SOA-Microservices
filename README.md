@@ -83,86 +83,211 @@ http://localhost:15672
 
 ---
 
-## **How to Run Each Service**
+Here’s your **README.md** version with proper Markdown formatting, including CatalogService instructions:
 
-1. Start RabbitMQ (if not using Docker, run `rabbitmq-server` locally)
-2. Open terminal in service folder, e.g.:
+````markdown
+# GlobalBooks SOA & Microservices
+
+## How to Run Each Service
+
+### 1. Start RabbitMQ
+
+If using Docker:
+
+```bash
+docker run -d --hostname my-rabbit --name rabbitmq -p 5672:5672 -p 15672:15672 rabbitmq:3-management
+````
+
+Or run locally:
+
+```bash
+rabbitmq-server
+```
+
+---
+
+### 2. Run CatalogService (SOAP - Tomcat Deployment)
+
+1. Navigate to the CatalogService project:
+
+```bash
+cd CatalogService
+```
+
+2. Build the WAR file:
+
+```bash
+mvn clean package
+```
+
+3. Copy the generated WAR file to your Tomcat `webapps` folder:
+
+```bash
+cp target/CatalogService.war <TOMCAT_HOME>/webapps/
+```
+
+4. Start Apache Tomcat:
+
+```bash
+cd <TOMCAT_HOME>/bin
+startup.bat   # Windows
+./startup.sh  # Linux/Mac
+```
+
+5. Verify the service is running by opening the WSDL in a browser:
+
+```
+http://localhost:8080/CatalogService/catalog?wsdl
+```
+
+---
+
+### 3. Run Orders Service (REST)
 
 ```bash
 cd orders-service
 mvn spring-boot:run
 ```
 
-3. Repeat for other services:
+---
+
+### 4. Run Payments Service
 
 ```bash
 cd payments-service
 mvn spring-boot:run
+```
 
+---
+
+### 5. Run Shipping Service
+
+```bash
 cd shipping-service
 mvn spring-boot:run
 ```
 
 ---
 
-## **API Testing (Using Postman)**
+## API Testing
 
-### **Orders Service**
+### Catalog Service (SOAP – using SOAP UI)
 
-* **Create Order**
+* WSDL:
 
-  * `POST http://localhost:8080/orders`
-  * Body (JSON):
+```
+http://localhost:8080/CatalogService/catalog?wsdl
+```
 
-    ```json
-    {
-      "productId": "123",
-      "quantity": 2,
-      "price": 25.5
-    }
-    ```
-* **Get Orders**
+* Operation: `getBookDetails`
 
-  * `GET http://localhost:8080/orders`
+#### Example SOAP Request
 
-### **Payments Service**
+```xml
+<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/">
+   <soapenv:Body>
+      <getBookDetails>
+         <productId>123</productId>
+      </getBookDetails>
+   </soapenv:Body>
+</soapenv:Envelope>
+```
+
+---
+
+### Orders Service (REST – using Postman)
+
+#### Create Order
+
+```
+POST http://localhost:8080/orders
+```
+
+```json
+{
+  "productId": "123",
+  "quantity": 2,
+  "price": 25.5
+}
+```
+
+#### Get Orders
+
+```
+GET http://localhost:8080/orders
+```
+
+---
+
+### Payments Service
 
 * Receives messages from `orders-service` via `paymentsExchange`
-* Auto-processes payments and logs confirmation
+* Automatically processes payments and logs confirmation
 
-### **Shipping Service**
+---
+
+### Shipping Service
 
 * Receives messages from `orders-service` via `ordersExchange`
 * Logs shipping confirmation
 
 ---
 
-## **Expected RabbitMQ Dashboard**
+## Expected RabbitMQ Dashboard
+
+Access the management console:
+
+```
+http://localhost:15672
+```
+
+### You should see:
 
 * **Exchanges:** `ordersExchange`, `paymentsExchange`
 * **Queues:** `paymentQueue`, `shippingQueue`
-* **Bindings:** Queues attached to correct exchanges
-* **Consumers:** Active for each queue (check “Consumers” column)
-* **Messages:** Zero ready/unacknowledged if all messages processed
+* **Bindings:** Queues connected to correct exchanges
+* **Consumers:** Active for each queue
+* **Messages:** 0 (after processing)
 
 ---
 
-## **Testing Notes**
+## Testing Notes
 
-* Submit an order → check RabbitMQ dashboard:
+* Submit an order using Postman
+
+* Observe RabbitMQ dashboard:
 
   * Messages appear in `paymentQueue` and `shippingQueue`
-  * Processed messages disappear after consumers ack
-* Verify logs in each service for confirmations
+  * Messages are consumed and disappear after processing
+
+* Verify logs in:
+
+  * Orders Service
+  * Payments Service
+  * Shipping Service
 
 ---
 
-## **Dependencies**
+## Dependencies
 
 * Spring Boot 3.x
 * Spring AMQP
 * Jackson (JSON)
 * Lombok (optional)
+* Apache Tomcat (for SOAP service)
+
+---
+
+## Quick Run Summary
+
+1. Start RabbitMQ
+2. Start Tomcat (CatalogService)
+3. Run Orders Service
+4. Run Payments Service
+5. Run Shipping Service
+6. Test using SOAP UI + Postman
+
+```
 
 ---
 
@@ -176,6 +301,7 @@ mvn spring-boot:run
 * [ ] RabbitMQ Docker / local instructions
 * [ ] Screenshots of dashboard (optional)
 
+```
 ```
 SOA/
 ├─ CatalogService/
