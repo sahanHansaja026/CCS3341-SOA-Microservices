@@ -1,0 +1,16 @@
+<definitions targetNamespace="http://shipping.globalbooks.com/"
+    xmlns="http://schemas.xmlsoap.org/wsdl/"
+    xmlns:tns="http://shipping.globalbooks.com/"
+    xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+    xmlns:plnk="http://docs.oasis-open.org/wsbpel/2.0/plnktype"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+    <message name="ShipOrderRequest"><part name="orderId" type="xsd:string"/><part name="address" type="xsd:string"/></message>
+    <message name="ShipOrderResponse"><part name="trackingNumber" type="xsd:string"/></message>
+    <portType name="ShippingPortType"><operation name="shipOrder"><input message="tns:ShipOrderRequest"/><output message="tns:ShipOrderResponse"/></operation></portType>
+    <binding name="ShippingBinding" type="tns:ShippingPortType">
+        <soap:binding style="rpc" transport="http://schemas.xmlsoap.org/soap/http"/>
+        <operation name="shipOrder"><soap:operation soapAction=""/><input><soap:body use="literal"/></input><output><soap:body use="literal"/></output></operation>
+    </binding>
+    <service name="ShippingService"><port name="ShippingPort" binding="tns:ShippingBinding"><soap:address location="http://localhost:8082/shipping"/></port></service>
+    <plnk:partnerLinkType name="ShippingLinkType"><plnk:role name="service" portType="tns:ShippingPortType"/></plnk:partnerLinkType>
+</definitions>

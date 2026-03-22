@@ -184,11 +184,13 @@ http://localhost:8080/CatalogService/catalog?wsdl
 #### Example SOAP Request
 
 ```xml
-<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/">
+<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"
+                  xmlns:cat="http://catalog.globalbooks.com/">
+   <soapenv:Header/>
    <soapenv:Body>
-      <getBookDetails>
-         <productId>123</productId>
-      </getBookDetails>
+      <cat:getBook>
+         <arg0>1111</arg0>
+      </cat:getBook>
    </soapenv:Body>
 </soapenv:Envelope>
 ```

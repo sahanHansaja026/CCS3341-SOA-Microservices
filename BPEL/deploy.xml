@@ -1,0 +1,15 @@
+<deploy xmlns="http://www.apache.org/ode/schemas/dd/2007/03"
+    xmlns:pns="http://globalbooks.com/bpel/order"
+    xmlns:cat="http://catalog.globalbooks.com/"
+    xmlns:ord="http://orders.globalbooks.com/"
+    xmlns:pay="http://payments.globalbooks.com/"
+    xmlns:ship="http://shipping.globalbooks.com/">
+    <process name="pns:PlaceOrderProcess">
+        <active>true</active>
+        <provide partnerLink="clientLink"><service name="pns:PlaceOrderService" port="PlaceOrderPort"/></provide>
+        <invoke partnerLink="catalogLink"><service name="cat:CatalogService" port="CatalogPort"/></invoke>
+        <invoke partnerLink="ordersLink"><service name="ord:OrdersService" port="OrdersPort"/></invoke>
+        <invoke partnerLink="paymentLink"><service name="pay:PaymentService" port="PaymentPort"/></invoke>
+        <invoke partnerLink="shippingLink"><service name="ship:ShippingService" port="ShippingPort"/></invoke>
+    </process>
+</deploy>

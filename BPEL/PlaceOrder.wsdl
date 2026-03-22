@@ -1,0 +1,18 @@
+<definitions targetNamespace="http://globalbooks.com/bpel/order"
+    xmlns="http://schemas.xmlsoap.org/wsdl/"
+    xmlns:tns="http://globalbooks.com/bpel/order"
+    xmlns:plnk="http://docs.oasis-open.org/wsbpel/2.0/plnktype"
+    xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+    <message name="OrderRequestMessage"><part name="bookId" type="xsd:string"/></message>
+    <message name="OrderResponseMessage"><part name="status" type="xsd:string"/></message>
+    <portType name="PlaceOrderPortType">
+        <operation name="placeOrder"><input message="tns:OrderRequestMessage"/><output message="tns:OrderResponseMessage"/></operation>
+    </portType>
+    <binding name="PlaceOrderBinding" type="tns:PlaceOrderPortType">
+        <soap:binding style="rpc" transport="http://schemas.xmlsoap.org/soap/http"/>
+        <operation name="placeOrder"><soap:operation soapAction=""/><input><soap:body use="literal"/></input><output><soap:body use="literal"/></output></operation>
+    </binding>
+    <service name="PlaceOrderService"><port name="PlaceOrderPort" binding="tns:PlaceOrderBinding"><soap:address location="http://localhost:8080/ode/processes/PlaceOrderService"/></port></service>
+    <plnk:partnerLinkType name="PlaceOrderLinkType"><plnk:role name="provider" portType="tns:PlaceOrderPortType"/></plnk:partnerLinkType>
+</definitions>

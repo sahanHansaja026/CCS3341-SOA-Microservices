@@ -1,0 +1,60 @@
+<process name="PlaceOrderProcess" targetNamespace="http://globalbooks.com/bpel/order"
+    xmlns="http://docs.oasis-open.org/wsbpel/2.0/process/executable"
+    xmlns:tns="http://globalbooks.com/bpel/order"
+    xmlns:cat="http://catalog.globalbooks.com/"
+    xmlns:ord="http://orders.globalbooks.com/"
+    xmlns:pay="http://payments.globalbooks.com/"
+    xmlns:ship="http://shipping.globalbooks.com/"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+
+    <import location="PlaceOrder.wsdl" importType="http://schemas.xmlsoap.org/wsdl/" namespace="http://globalbooks.com/bpel/order"/>
+    <import location="CatalogService.wsdl" importType="http://schemas.xmlsoap.org/wsdl/" namespace="http://catalog.globalbooks.com/"/>
+    <import location="OrdersService.wsdl" importType="http://schemas.xmlsoap.org/wsdl/" namespace="http://orders.globalbooks.com/"/>
+    <import location="PaymentService.wsdl" importType="http://schemas.xmlsoap.org/wsdl/" namespace="http://payments.globalbooks.com/"/>
+    <import location="ShippingService.wsdl" importType="http://schemas.xmlsoap.org/wsdl/" namespace="http://shipping.globalbooks.com/"/>
+
+    <partnerLinks>
+        <partnerLink name="clientLink" partnerLinkType="tns:PlaceOrderLinkType" myRole="provider"/>
+        <partnerLink name="catalogLink" partnerLinkType="cat:CatalogLinkType" partnerRole="service"/>
+        <partnerLink name="ordersLink" partnerLinkType="ord:OrdersLinkType" partnerRole="service"/>
+        <partnerLink name="paymentLink" partnerLinkType="pay:PaymentLinkType" partnerRole="service"/>
+        <partnerLink name="shippingLink" partnerLinkType="ship:ShippingLinkType" partnerRole="service"/>
+    </partnerLinks>
+
+    <variables>
+        <variable name="input" messageType="tns:OrderRequestMessage"/>
+        <variable name="output" messageType="tns:OrderResponseMessage"/>
+        <variable name="catReq" messageType="cat:GetPriceRequest"/>
+        <variable name="catRes" messageType="cat:GetPriceResponse"/>
+        <variable name="ordReq" messageType="ord:CreateOrderRequest"/>
+        <variable name="ordRes" messageType="ord:CreateOrderResponse"/>
+        <variable name="payReq" messageType="pay:ProcessPaymentRequest"/>
+        <variable name="payRes" messageType="pay:ProcessPaymentResponse"/>
+        <variable name="shipReq" messageType="ship:ShipOrderRequest"/>
+        <variable name="shipRes" messageType="ship:ShipOrderResponse"/>
+    </variables>
+
+    <sequence>
+        <receive name="start" partnerLink="clientLink" operation="placeOrder" variable="input" createInstance="yes"/>
+        <assign name="MapToCatalog"><copy><from>$input.bookId</from><to>$catReq.id</to></copy></assign>
+        <invoke name="CallCatalog" partnerLink="catalogLink" operation="getPrice" inputVariable="catReq" outputVariable="catRes"/>
+        <assign name="MapToOrders">
+            <copy><from>$input.bookId</from><to>$ordReq.bookId</to></copy>
+            <copy><from>1</from><to>$ordReq.quantity</to></copy>
+            <copy><from>$catRes.price</from><to>$ordReq.price</to></copy>
+        </assign>
+        <invoke name="CallOrders" partnerLink="ordersLink" operation="createOrder" inputVariable="ordReq" outputVariable="ordRes"/>
+        <assign name="MapToPayment">
+            <copy><from>$ordRes.orderId</from><to>$payReq.orderId</to></copy>
+            <copy><from>$catRes.price</from><to>$payReq.amount</to></copy>
+        </assign>
+        <invoke name="CallPayment" partnerLink="paymentLink" operation="processPayment" inputVariable="payReq" outputVariable="payRes"/>
+        <assign name="MapToShipping">
+            <copy><from>$ordRes.orderId</from><to>$shipReq.orderId</to></copy>
+            <copy><from>'Customer Address'</from><to>$shipReq.address</to></copy>
+        </assign>
+        <invoke name="CallShipping" partnerLink="shippingLink" operation="shipOrder" inputVariable="shipReq" outputVariable="shipRes"/>
+        <assign name="FinalStatus"><copy><from>concat('Complete! Order:', $ordRes.orderId, ' Track:', $shipRes.trackingNumber)</from><to>$output.status</to></copy></assign>
+        <reply name="end" partnerLink="clientLink" operation="placeOrder" variable="output"/>
+    </sequence>
+</process>

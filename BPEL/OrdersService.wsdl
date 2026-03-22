@@ -1,0 +1,16 @@
+<definitions targetNamespace="http://orders.globalbooks.com/"
+    xmlns="http://schemas.xmlsoap.org/wsdl/"
+    xmlns:tns="http://orders.globalbooks.com/"
+    xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+    xmlns:plnk="http://docs.oasis-open.org/wsbpel/2.0/plnktype"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+    <message name="CreateOrderRequest"><part name="bookId" type="xsd:string"/><part name="quantity" type="xsd:int"/><part name="price" type="xsd:double"/></message>
+    <message name="CreateOrderResponse"><part name="orderId" type="xsd:string"/></message>
+    <portType name="OrdersPortType"><operation name="createOrder"><input message="tns:CreateOrderRequest"/><output message="tns:CreateOrderResponse"/></operation></portType>
+    <binding name="OrdersBinding" type="tns:OrdersPortType">
+        <soap:binding style="rpc" transport="http://schemas.xmlsoap.org/soap/http"/>
+        <operation name="createOrder"><soap:operation soapAction=""/><input><soap:body use="literal"/></input><output><soap:body use="literal"/></output></operation>
+    </binding>
+    <service name="OrdersService"><port name="OrdersPort" binding="tns:OrdersBinding"><soap:address location="http://localhost:8083/orders"/></port></service>
+    <plnk:partnerLinkType name="OrdersLinkType"><plnk:role name="service" portType="tns:OrdersPortType"/></plnk:partnerLinkType>
+</definitions>
