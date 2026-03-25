@@ -26,13 +26,12 @@ public class OrderController {
     public Order createOrder(@RequestBody Order order) {
         String id = UUID.randomUUID().toString();
         order.setId(id);
-        order.setTotal(order.getQuantity() * 50); // example price
+        order.setTotal(order.getQuantity() * 50);
+
         orders.put(id, order);
 
-        // Send order to PaymentsService via RabbitMQ
         rabbitTemplate.convertAndSend(orderQueueName, order);
 
-        System.out.println("Sent order to queue: " + order.getId());
         return order;
     }
 
