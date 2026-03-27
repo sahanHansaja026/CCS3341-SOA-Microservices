@@ -1,0 +1,6 @@
+<wsse:Security xmlns:wsse="http://schemas.xmlsoap.org/ws/2002/07/secext">
+    <wsse:UsernameToken>
+        <wsse:Username>Sahan</wsse:Username>
+        <wsse:Password>password123</wsse:Password>
+    </wsse:UsernameToken>
+</wsse:Security>

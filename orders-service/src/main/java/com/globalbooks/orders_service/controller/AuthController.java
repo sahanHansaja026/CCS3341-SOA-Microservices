@@ -15,7 +15,6 @@ public class AuthController {
     private final String demoUsername = "sahan";
     private final String demoPassword = "Password123";
 
-    // ✅ FIXED: constant key (DO NOT CHANGE THIS STRING)
     private static final String SECRET = "mysecretkeymysecretkeymysecretkey12";
 
     public static SecretKey getJwtKey() {

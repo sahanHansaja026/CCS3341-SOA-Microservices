@@ -1,0 +1,15 @@
+<businessEntity businessKey="globalbooks:CatalogService">
+  <name>CatalogService</name>
+  <description>Provides book lookup and price information via SOAP endpoint</description>
+  <businessService serviceKey="globalbooks:CatalogService:v1">
+    <name>CatalogServiceSOAP</name>
+    <bindingTemplates>
+      <bindingTemplate>
+        <accessPoint URLType="http">http://localhost:8080/CatalogService</accessPoint>
+        <tModelInstanceDetails>
+          <tModelInstanceInfo tModelKey="uddi:schemas:wsdl"/>
+        </tModelInstanceDetails>
+      </bindingTemplate>
+    </bindingTemplates>
+  </businessService>
+</businessEntity>
